@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.newer.datang.data.dao.IPlanDao">
+
+   <resultMap id="planResultMap"  type="myPlan">
+		<id property="planId" column="PLAN_ID" />
+		<result property="planName" column="PLAN_NAME" />
+		<result property="status" column="STATUS" />
+		<result property="isFeedback" column="IS_FEEDBACK" />
+		<result property="beginDate" column="BEGIN_DATE" />
+		<result property="endDate" column="END_DATE" />
+		<result property="feedbackInfo" column="FEEDBACK_INFO" />
+		<result property="planDesc" column="PLAN_DESC" />
+		<association property="task" column="TASK_ID" javaType="myTask" select="findTaskByTaskId">
+		</association>
+	</resultMap>
+	
+	<!-- 根据任务编号查询任务 -->
+	<select id="findTaskByTaskId" resultMap="com.newer.datang.data.dao.ITaskDao.taskResultMap" >
+		select * from T_TASK where TASK_ID =#{id}
+	</select>
+	
+	<!-- 根据任务编号查询计划 分页 -->
+	<select id="selectPlanByTaskIdForPage" resultMap="planResultMap" resultType="list" parameterType="map">
+		select * from (select row_number() over(order by PLAN_ID) no, T_PLAN.* from T_PLAN where TASK_ID=#{taskId})temp 
+		<if test='endIndex != null and endIndex!=""'>
+			<![CDATA[where no <=#{endIndex}]]>
+		</if>
+
+		<if test='startIndex != null and startIndex!=""'>
+			and no>=#{startIndex}
+		</if>
+	</select>
+	
+	<!-- 根据任务编号查询计划数量 -->
+	<select id="selectCountPlanByTaskId" parameterType="int" resultType="int">
+		select count(*) from T_PLAN where TASK_ID=#{taskId}
+	</select>
+	
+	<!-- 根据计划编号查询计划 -->
+	<select id="selectPlanByPlanId" parameterType="int" resultMap="planResultMap" resultType="myPlan">
+		select * from t_plan where plan_id =#{planId}
+	</select>
+	
+	<!-- 根据计划编号删除计划 -->
+	<delete id="deletePlanByPlanId" parameterType="int">
+		delete from t_plan where plan_id =#{planId}
+	</delete>
+	
+	<!-- 根据任务编号删除计划 -->
+	<delete id="deletePlanByTaskId" parameterType="int">
+		delete from t_plan where TASK_ID=#{taskId}
+	</delete>
+	
+	<!-- 添加计划 -->
+	<insert id="insertPlan" parameterType="myPlan" >
+		insert into T_PLAN (plan_id,plan_name,status,is_feedback,begin_date,end_date,task_id,feedback_info,plan_desc) values
+		 (t_plan_seq.nextval,#{planName},'未完成','否',#{beginDate},#{endDate},#{task.taskId},null,#{planDesc})
+	</insert>
+	
+	<!-- 根据计划编号修改计划 -->
+	<update id="updatePlan" parameterType="myPlan">
+		update T_PLAN set STATUS=#{status},IS_FEEDBACK=#{isFeedback},FEEDBACK_INFO=#{feedbackInfo} where PLAN_ID=#{planId}
+	</update>
+	
+	<!-- 高级查询计划  分页 -->
+	<select id="selectSeniorPlanForPage" resultMap="planResultMap" resultType="list" parameterType="map"> 
+		select * from (select row_number() over(order by PLAN_ID) no, t.* from T_PLAN t
+		<where>
+			<if test='dto.taskId!= null and dto.taskId> 0'>
+				t.TASK_ID = #{dto.taskId}
+			</if>
+			<if test='dto.isFeedback != null and dto.isFeedback!=""'>
+				t.IS_FEEDBACK =#{dto.isFeedback}
+			</if>
+			<if test='dto.beginDateBefore != null and dto.beginDateAfter!= null and dto.beginDateBefore>=0.0 and  dto.beginDateAfter>0.0'>
+				and t.BEGIN_DATE between #{dto.beginDateBefore} and #{dto.beginDateAfter}
+			</if>
+			<if test='dto.endDateBefore != null and dto.endDateAfter != null'>
+				and t.END_DATE between #{dto.endDateBefore} and #{dto.endDateAfter}
+		   </if>
+		</where>
+		  	 ) temp
+		  	 <where>
+				<if test='endIndex != null and endIndex!=""'>
+					<![CDATA[no <=#{endIndex}]]>
+				</if>
+				<if test='startIndex != null and startIndex!=""'>
+					and no>=#{startIndex}
+				</if>
+			</where>
+	</select>
+	
+	<!-- 根据高级查询条件查询结果数 -->
+	<select id="selectCountSeniorPlanForPage" resultType="int" parameterType="com.newer.datang.data.entity.PlanDTO"> 
+		select count(*) from (select row_number() over(order by PLAN_ID) no, t.* from T_PLAN t
+		<where>
+			<if test='taskId!= null and taskId> 0'>
+				t.TASK_ID = #{taskId}
+			</if>
+			<if test='isFeedback != null and isFeedback!=""'>
+				t.IS_FEEDBACK =#{isFeedback}
+			</if>
+			<if test='beginDateBefore != null and beginDateAfter!= null and beginDateBefore>=0.0 and  beginDateAfter>0.0'>
+				and t.BEGIN_DATE between #{beginDateBefore} and #{beginDateAfter}
+			</if>
+			<if test='endDateBefore != null and endDateAfter != null'>
+				and t.END_DATE between #{endDateBefore} and #{endDateAfter}
+		   </if>
+		    ) temp
+		</where>
+	</select>
+ </mapper>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

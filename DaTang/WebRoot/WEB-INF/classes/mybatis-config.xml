@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<typeAliases>
+		<typeAlias alias="myRole"  type="com.newer.datang.data.entity.Role"/>
+		<typeAlias alias="myEmp"  type="com.newer.datang.data.entity.EmpLoyee"/>
+		<typeAlias alias="myTask"  type="com.newer.datang.data.entity.Task"/>
+		<typeAlias alias="myPlan"  type="com.newer.datang.data.entity.Plan"/>
+	</typeAliases>
+	
+	<mappers>
+		<mapper resource="com/newer/datang/data/dao/RoleDAOMapper.xml"/>
+		<mapper resource="com/newer/datang/data/dao/EmployeeDAOMapper.xml"/>
+		<mapper resource="com/newer/datang/data/dao/TaskDAOMapper.xml"/>
+		<mapper resource="com/newer/datang/data/dao/PlanDAOMapper.xml"/>
+	</mappers>
+</configuration>
+
+

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd">
+
+	<context:component-scan base-package="com.newer.datang"/>
+
+	<mvc:annotation-driven/>
+		
+	
+	<!--加载静态资源 -->
+	<mvc:resources location="/css/" mapping="/css/**" />
+	<mvc:resources location="/fonts/" mapping="/fonts/**" />
+	<mvc:resources location="/images/" mapping="/images/**" />
+ 	<mvc:resources location="/js/" mapping="/js/**" />
+ 	
+ 	<!--配置错误消息 -->
+ 	<bean id="messageSource" 
+	class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+			<!-- basename必须配置，SpringMVC才能加载错误消息的资源文件 -->
+			<property name="basename" value="classpath:messages"></property>
+			<property name="defaultEncoding" value="utf-8"></property>
+			<property name="cacheSeconds" value="120"></property>
+	</bean>
+	
+</beans>

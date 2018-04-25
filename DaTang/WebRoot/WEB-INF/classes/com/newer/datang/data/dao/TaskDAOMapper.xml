@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.newer.datang.data.dao.ITaskDao">
+
+   <resultMap id="taskResultMap"  type="myTask">
+		<id property="taskId" column="TASK_ID" />
+		<result property="taskName" column="TASK_NAME" />
+		<result property="beginDate" column="BEGIN_DATE" />
+		<result property="endDate" column="END_DATE" />
+		<result property="realBeginDate" column="REAL_BEGIN_DATE" />
+		<result property="realEndDate" column="REAL_END_DATE" />
+		<result property="status" column="STATUS" />
+		<result property="taskDesc" column="TASK_DESC" />
+		<association property="planCount" column="TASK_ID" javaType="int" select="selectPlanCountByTaskId">
+		</association>
+		<association property="implementor" column="IMPLEMENTOR_ID" javaType="myEmp" select="findEmployeeById">
+		</association>
+		<association property="assigner" column="ASSIGNER_ID" javaType="myEmp" select="findEmployeeById">
+		</association>
+	</resultMap>
+	
+	<!-- 根据员工编号查询员工 -->
+	<select id="findEmployeeById" resultMap="com.newer.datang.data.dao.IEmployeeDao.empResultMap" >
+		select * from t_employee where EMPLOYEE_ID=#{employeeId}
+	</select>
+	
+	<!-- 根据任务编号查询计划数量 -->
+	<select id="selectPlanCountByTaskId" resultType="int">
+		select count(*) from T_PLAN where TASK_ID=#{id}
+	</select>
+	
+	<!-- 查询所有任务并分页 -->
+	<select id="selectAllTask" resultMap="taskResultMap" resultType="list" parameterType="map">
+		select * from (select row_number() over(order by TASK_ID) no, T_TASK.* from T_TASK )temp 
+		<if test='endIndex != null and endIndex!=""'>
+			<![CDATA[where no <=#{endIndex}]]>
+		</if>
+
+		<if test='startIndex != null and startIndex!=""'>
+			and no>=#{startIndex}
+		</if>
+	</select>
+	
+	<!-- 查询所有任务的数量 -->
+	<select id="selectCountByTask" resultType="int">
+		select count(*) from T_TASK
+	</select>
+	
+	<!-- 根据ID查询任务 -->
+	<select id="findTaskById" resultMap="taskResultMap" parameterType="int">
+		select * from T_TASK where TASK_ID =#{id}
+	</select>
+	
+	<!-- 新增任务 -->
+	<insert id="insertTask" parameterType="myTask">
+		insert into T_TASK values (task_seq.nextval,#{taskName},#{beginDate},#{endDate},null,null,'未实施	',#{implementor.employeeId},#{assigner.employeeId},#{taskDesc})
+	</insert>
+	
+	<!-- 根据ID删除任务 -->
+	<delete id="deleteTaskByTaskId" parameterType="int">
+		delete from t_task where task_id=#{id}
+	</delete>
+	
+	<!-- 查询所有为实施中的任务 -->
+	<select id="selectTaskInOperation" resultMap="taskResultMap" resultType="list" parameterType="map">
+		select * from (select row_number() over(order by TASK_ID) no, T_TASK.* from T_TASK where STATUS ='实施中')temp 
+		<if test='endIndex != null and endIndex!=""'>
+			<![CDATA[where no <=#{endIndex}]]>
+		</if>
+		<if test='startIndex != null and startIndex!=""'>
+			and no>=#{startIndex}
+		</if>
+	</select>
+	
+	<!-- 查询所有为实施中的任务数量 -->
+	<select id="selectCountTaskInOperation" resultType="int">
+		select count(*) from T_TASK where STATUS ='实施中'
+	</select>
+	
+	<!-- 根据任务编号修改任务状态 -->
+	<update id="updateTaskStutasByTaskId"  parameterType="map">
+		update T_TASK set STATUS=#{status} where TASK_ID=#{taskId}
+	</update>
+ </mapper>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.newer.datang.data.dao.IEmployeeDao">
+
+   <resultMap id="empResultMap"  type="myEmp">
+		<id property="employeeId" column="EMPLOYEE_ID" />
+		<result property="employeeName" column="EMPLOYEE_NAME" />
+		<result property="password" column="PASSWORD" />
+		<result property="realName" column="REAL_NAME" />
+		<result property="sex" column="SEX" />
+		<result property="birthDay" column="BIRTHDAY" />
+		<result property="duty" column="DUTY" />
+		<result property="endrolldDate" column="ENROLLDATE" />
+		<result property="education" column="EDUCATION" />
+		<result property="major" column="MAJOR" />
+		<result property="experience" column="EXPERIENCE" />
+		<association property="role" column="ROLE_ID" javaType="myRole" select="findRoleByRoleId">
+		</association>
+		<association property="parent"  column="PARENT_ID" javaType="myEmp" select="findParentById">
+		</association>
+	</resultMap>
+	
+	<!-- 根据ID查询角色 -->
+	<select id="findRoleByRoleId" resultMap="com.newer.datang.data.dao.IRoleDao.roleResultMap" 	>
+		select * from t_role where role_id=#{id}
+	</select>
+	
+	<!-- 根据ID查询父对象  -->
+	<select id="findParentById" resultMap="empResultMap" 	>
+		select * from t_employee parent inner join t_employee child on(child.PARENT_ID=parent.EMPLOYEE_ID) where child.EMPLOYEE_ID=#{id} 
+	</select>
+	
+	<!-- 查询所有员工 -->
+	<select id="selectAllEmployee" resultMap="empResultMap" 	resultType="List">
+		select * from t_employee 
+	</select>
+	
+	<!-- 根据员工编号查询员工 -->
+	<select id="findEmployeeById" resultMap="empResultMap" 	resultType="myEmp" parameterType="int">
+		select * from t_employee where EMPLOYEE_ID=#{employeeId}
+	</select>
+	
+	<!-- 根据主管编号查询员工数量 -->
+	<select id="selectCountEmpLoyeeByParentId"  resultType="int" parameterType="int">
+		select count(*) from t_employee where PARENT_ID=#{id}
+	</select>
+	
+	<!-- 根据用户名、密码查询员工 -->
+	<select id="selectEmpLoyeeByNameAndPWD" resultMap="empResultMap" 	resultType="myEmp" parameterType="myEmp">
+		select * from T_EMPLOYEE where EMPLOYEE_NAME=#{employeeName} and PASSWORD=#{password}
+	</select>
+	
+	<!-- 根据分页查询所有员工 -->
+	<select id="selectAllEmpLoyeeByPage" resultMap="empResultMap" 	resultType="list" parameterType="map">
+		select * from (select row_number() over(order by EMPLOYEE_ID) no, T_EMPLOYEE.* from T_EMPLOYEE  ) temp
+		<if test='endIndex != null and endIndex!=""'>
+			<![CDATA[where no <=#{endIndex}]]>
+		</if>
+
+		<if test='startIndex != null and startIndex!=""'>
+			and no>=#{startIndex}
+		</if>
+	</select>
+	
+	<!-- 查询所有员工数量 -->
+	<select id="selectCountForAllEmp"  resultType="int" >
+		select count(*) from T_EMPLOYEE
+	</select>
+	
+	<!-- 新增员工信息 -->
+	<insert id="insertEmployee"  parameterType="myEmp" >
+		insert into T_EMPLOYEE (employee_id, employee_name, password, real_name, sex, birthday, duty, enrolldate, education, major, experience, role_id, parent_id) 
+		values (loyee_seq.nextval,#{employeeName},#{password},#{realName},#{sex},#{birthDay},#{duty},#{endrolldDate},#{education},#{major},#{experience},#{role.roleId},null)
+	</insert>
+	
+	<!-- 根据ID删除员工 -->
+	<delete id="deleteEmpLoyeeByEmpId" parameterType="int">
+		delete from T_EMPLOYEE where employee_id=#{id}
+	</delete>
+
+	<!-- 根据分页查询所有员工 角色为4的 -->
+	<select id="selectAllEmpLoyeeByPageWhereRole" resultMap="empResultMap" 	resultType="list" parameterType="map">
+		select * from (select row_number() over(order by EMPLOYEE_ID) no, T_EMPLOYEE.* from T_EMPLOYEE where ROLE_ID=4 ) temp
+		<if test='endIndex != null and endIndex!=""'>
+			<![CDATA[where no <=#{endIndex}]]>
+		</if>
+		<if test='startIndex != null and startIndex!=""'>
+			and no>=#{startIndex}
+		</if>
+	</select>
+	
+	<!-- 查询所有员工角色为员工的数量 -->
+	<select id="selectCountForAllEmpWhereRole"  resultType="int" >
+		select count(*) from T_EMPLOYEE where ROLE_ID=4
+	</select>
+	
+	<!-- 查询所有员工角色为主管 -->
+	<select id="selectEmpForRoleIsManager" resultMap="empResultMap"  resultType="list" >
+		select * from T_EMPLOYEE where ROLE_ID=3
+	</select>
+	
+	<!-- 查询所有员工角色为员工 -->
+	<select id="selectEmpForRoleIsPerson" resultMap="empResultMap"  resultType="list" >
+		select * from T_EMPLOYEE where ROLE_ID=4
+	</select>
+	
+	<!-- 根据编号修改员工信息 -->
+	<update id="updateEmployeeById" parameterType="map">
+		update T_EMPLOYEE set PARENT_ID=#{parentId} where EMPLOYEE_ID=#{employeeId}
+	</update>
+	
+	<!-- 查询主管下辖所有员工 分页 -->
+	<select id="selectEmpLoyeeByParentId" resultMap="empResultMap" 	resultType="list" parameterType="map">
+		select * from (select row_number() over(order by EMPLOYEE_ID) no, T_EMPLOYEE.* from T_EMPLOYEE where PARENT_ID=#{parentId})temp 
+		<if test='endIndex != null and endIndex!=""'>
+			<![CDATA[where no <=#{endIndex}]]>
+		</if>
+		<if test='startIndex != null and startIndex!=""'>
+			and no>=#{startIndex}
+		</if>
+	</select>
+ </mapper>
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
